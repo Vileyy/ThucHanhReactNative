@@ -1,4 +1,3 @@
-// src/buoi2/Options.js
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import DetailListItem from "../../components/DetailListItem";

@@ -1,4 +1,3 @@
-// src/buoi2/Contacts.js
 import React, { useState, useEffect } from "react";
 import {
   StyleSheet,

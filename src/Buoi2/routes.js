@@ -1,20 +1,13 @@
-// src/Buoi2/routes.js
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { MaterialIcons } from "@expo/vector-icons";
-
-// Import screens
 import Contacts from "./Contacts";
 import Profile from "./Profile";
 import Favorites from "./Favorites";
 import User from "./User";
 import Options from "./Options";
-
-// Import utilities
 import colors from "../../utils/colors";
-
-// Import components from root components folder
 import ContactListItem from "../../components/ContactListItem";
 import ContactThumbnail from "../../components/ContactThumbnail";
 import DetailListItem from "../../components/DetailListItem";
@@ -24,11 +17,7 @@ const getTabBarIcon =
   (icon) =>
   ({ color }) =>
     <MaterialIcons name={icon} size={26} style={{ color }} />;
-
-// Create stack navigators
 const Stack = createNativeStackNavigator();
-
-// Contacts Stack
 const ContactsScreens = () => {
   return (
     <Stack.Navigator
@@ -63,7 +52,6 @@ const ContactsScreens = () => {
   );
 };
 
-// Favorites Stack
 const FavoritesScreens = () => {
   return (
     <Stack.Navigator
@@ -98,7 +86,6 @@ const FavoritesScreens = () => {
   );
 };
 
-// User Stack
 const UserScreens = ({ navigation }) => {
   return (
     <Stack.Navigator
@@ -133,7 +120,6 @@ const UserScreens = ({ navigation }) => {
   );
 };
 
-// Tab Navigator
 const Tab = createBottomTabNavigator();
 
 const TabNavigator = () => {

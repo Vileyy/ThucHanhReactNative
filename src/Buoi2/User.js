@@ -1,4 +1,3 @@
-// src/buoi2/User.js
 import React, { useState, useEffect } from "react";
 import { StyleSheet, Text, View, ActivityIndicator } from "react-native";
 import ContactThumbnail from "../../components/ContactThumbnail";

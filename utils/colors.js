@@ -1,4 +1,3 @@
-// src/buoi2/utils/colors.js
 export default {
   blue: "#0077B5",
   greyLight: "#E2E2E2",

@@ -1,4 +1,3 @@
-// src/buoi2/components/ContactThumbnail.js
 import React from "react";
 import { StyleSheet, View, TouchableOpacity, Image, Text } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";

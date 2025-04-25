@@ -1,4 +1,3 @@
-// src/buoi2/components/ContactListItem.js
 import React from 'react';
 import { View, Text, TouchableHighlight, StyleSheet, Image } from 'react-native';
 import colors from '../utils/colors';
