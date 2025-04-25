@@ -12,6 +12,9 @@ import Project6 from "./src/Buoi1/Project6";
 import Project7 from "./src/Buoi1/Project7";
 import Project8 from "./src/Buoi1/Project8";
 
+// Import Lab2 components
+import ContactsNavigator from "./src/Buoi2/routes";
+
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -69,6 +72,16 @@ export default function App() {
           name="Project8"
           component={Project8}
           options={{ title: "Project 8. Long Lists" }}
+        />
+
+        {/* Bài thực hành buổi 2 */}
+        <Stack.Screen
+          name="Lab2"
+          component={ContactsNavigator}
+          options={{
+            title: "Bài thực hành buổi 2",
+            headerShown: false, // Hide this header since the navigator has its own headers
+          }}
         />
       </Stack.Navigator>
     </NavigationContainer>
