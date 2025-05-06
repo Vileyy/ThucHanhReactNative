@@ -19,10 +19,7 @@ const AddServiceScreen = () => {
 
   // Hàm định dạng giá tiền với dấu chấm ngăn cách hàng nghìn
   const formatCurrency = (value) => {
-    // Loại bỏ tất cả các ký tự không phải số
     const numericValue = value.replace(/[^0-9]/g, "");
-
-    // Định dạng số với dấu chấm ngăn cách hàng nghìn
     if (numericValue) {
       return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ".") + "đ";
     }

@@ -52,7 +52,7 @@ const SpaServicesScreen = () => {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Doãn Quốc Hiếu</Text>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate("Profile")}>
           <Icon name="account-circle" size={32} color="#fff" />
         </TouchableOpacity>
       </View>

@@ -18,6 +18,7 @@ import RegisterScreen from "./src/Buoi3/RegisterScreen";
 import SpaServicesScreen from "./src/Buoi3/SpaServicesScreen";
 import AddServiceScreen from "./src/Buoi3/AddServiceScreen";
 import ServiceDetailScreen from "./src/Buoi3/ServiceDetailScreen";
+import ProfileScreen from "./src/Buoi3/ProfileScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -115,6 +116,11 @@ export default function App() {
           name="ServiceDetail"
           component={ServiceDetailScreen}
           options={{ title: "Chi tiết dịch vụ", headerShown: false }}
+        />
+        <Stack.Screen
+          name="Profile"
+          component={ProfileScreen}
+          options={{ headerShown: false }}
         />
       </Stack.Navigator>
     </NavigationContainer>
