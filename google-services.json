@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1070531932324",
+    "project_id": "thuchanhreactnative",
+    "storage_bucket": "thuchanhreactnative.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1070531932324:android:a2fd789532af07a74bb631",
+        "android_client_info": {
+          "package_name": "com.doanhhieu.ThucHangReact"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDO_Ae18f7KrlYYyWw_WPoqkjWkoFTj09I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

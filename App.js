@@ -13,6 +13,11 @@ import Project7 from "./src/Buoi1/Project7";
 import Project8 from "./src/Buoi1/Project8";
 import ContactsNavigator from "./src/Buoi2/routes";
 import Options from "./src/Buoi2/Options";
+import LoginScreen from "./src/Buoi3/LoginScreen";
+import RegisterScreen from "./src/Buoi3/RegisterScreen";
+import SpaServicesScreen from "./src/Buoi3/SpaServicesScreen";
+import AddServiceScreen from "./src/Buoi3/AddServiceScreen";
+import ServiceDetailScreen from "./src/Buoi3/ServiceDetailScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -20,6 +25,7 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Home">
+        {/* Main Screens */}
         <Stack.Screen
           name="Home"
           component={HomeScreen}
@@ -50,42 +56,65 @@ export default function App() {
         <Stack.Screen
           name="Project4"
           component={Project4}
-          options={{ title: "Project 4. State & Props" }}
+          options={{ title: "Project 4. State" }}
         />
         <Stack.Screen
           name="Project5"
           component={Project5}
-          options={{ title: "Project 5. Styling" }}
+          options={{ title: "Project 5. Text Input" }}
         />
         <Stack.Screen
           name="Project6"
           component={Project6}
-          options={{ title: "Project 6. Scrollable Content" }}
+          options={{ title: "Project 6. ScrollView" }}
         />
         <Stack.Screen
           name="Project7"
           component={Project7}
-          options={{ title: "Project 7. Building a Form" }}
+          options={{ title: "Project 7. List" }}
         />
         <Stack.Screen
           name="Project8"
           component={Project8}
-          options={{ title: "Project 8. Long Lists" }}
+          options={{ title: "Project 8. Fetch" }}
         />
 
         {/* Bài thực hành buổi 2 */}
         <Stack.Screen
-          name="Lab2"
+          name="Contacts"
           component={ContactsNavigator}
-          options={{
-            title: "Bài thực hành buổi 2",
-            headerShown: false, 
-          }}
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="Options"
           component={Options}
-          options={{ title: "Options" }}
+          options={{ title: "Tùy chọn" }}
+        />
+        {/* Buoi 3 */}
+        <Stack.Screen
+          name="Login"
+          component={LoginScreen}
+          options={{ title: "Đăng nhập", headerShown: false }}
+        />
+        <Stack.Screen
+          name="Register"
+          component={RegisterScreen}
+          options={{ title: "Đăng ký", headerShown: false }}
+        />
+        <Stack.Screen
+          name="SpaServices"
+          component={SpaServicesScreen}
+          options={{ title: "Dịch vụ Spa", headerShown: false }}
+        />
+        <Stack.Screen
+          name="AddService"
+          component={AddServiceScreen}
+          options={{ title: "Thêm dịch vụ", headerShown: false }}
+        />
+        <Stack.Screen
+          name="ServiceDetail"
+          component={ServiceDetailScreen}
+          options={{ title: "Chi tiết dịch vụ", headerShown: false }}
         />
       </Stack.Navigator>
     </NavigationContainer>
