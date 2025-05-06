@@ -43,7 +43,7 @@ const RegisterScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Đăng ký</Text>
+      <Text style={styles.title}>Register</Text>
       <TextInput
         style={styles.input}
         placeholder="Email"
@@ -54,26 +54,26 @@ const RegisterScreen = ({ navigation }) => {
       />
       <TextInput
         style={styles.input}
-        placeholder="Mật khẩu"
+        placeholder="Password"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
       />
       <TextInput
         style={styles.input}
-        placeholder="Xác nhận mật khẩu"
+        placeholder="Confirm Password"
         value={confirmPassword}
         onChangeText={setConfirmPassword}
         secureTextEntry
       />
       <TouchableOpacity style={styles.button} onPress={handleRegister}>
-        <Text style={styles.buttonText}>Đăng ký</Text>
+        <Text style={styles.buttonText}>Register</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.linkButton}
         onPress={() => navigation.navigate("Login")}
       >
-        <Text style={styles.linkText}>Đã có tài khoản? Đăng nhập</Text>
+        <Text style={styles.linkText}>Already have an account? Login</Text>
       </TouchableOpacity>
     </View>
   );
@@ -84,39 +84,42 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     padding: 20,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#fafafa",
   },
   title: {
-    fontSize: 24,
+    fontSize: 48,
     fontWeight: "bold",
-    marginBottom: 30,
+    marginBottom: 40,
     textAlign: "center",
+    color: "#F76C6B",
   },
   input: {
-    backgroundColor: "white",
+    backgroundColor: "#fff",
     padding: 15,
-    borderRadius: 10,
+    borderRadius: 12,
     marginBottom: 15,
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: "#e0e0e0",
+    fontSize: 16,
   },
   button: {
-    backgroundColor: "#007AFF",
+    backgroundColor: "#F76C6B",
     padding: 15,
-    borderRadius: 10,
+    borderRadius: 12,
     alignItems: "center",
+    marginTop: 10,
     marginBottom: 10,
   },
   buttonText: {
     color: "white",
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "bold",
   },
   linkButton: {
     alignItems: "center",
   },
   linkText: {
-    color: "#007AFF",
+    color: "#F76C6B",
     fontSize: 14,
   },
 });
