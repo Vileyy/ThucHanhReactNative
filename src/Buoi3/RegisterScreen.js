@@ -3,78 +3,138 @@ import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
   StyleSheet,
+  TouchableOpacity,
   Alert,
+  Image,
 } from "react-native";
-import { auth } from "../../firebaseConfig";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { getDatabase, ref, set } from "firebase/database";
+import { useNavigation } from "@react-navigation/native";
 
-const RegisterScreen = ({ navigation }) => {
+const RegisterScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const navigation = useNavigation();
 
   const handleRegister = async () => {
+    if (!email || !password || !confirmPassword) {
+      Alert.alert("Lỗi", "Vui lòng nhập đầy đủ thông tin");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      Alert.alert("Lỗi", "Mật khẩu xác nhận không khớp");
+      return;
+    }
+
     try {
-      if (!email || !password || !confirmPassword) {
-        Alert.alert("Lỗi", "Vui lòng nhập đầy đủ thông tin");
-        return;
-      }
-
-      if (password !== confirmPassword) {
-        Alert.alert("Lỗi", "Mật khẩu không khớp");
-        return;
-      }
-
+      const auth = getAuth();
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
         password
       );
-      Alert.alert("Thành công", "Đăng ký thành công!");
-      console.log("User registered successfully!", userCredential.user);
-      navigation.navigate("Login");
+      const user = userCredential.user;
+
+      // Lưu thông tin user vào Realtime Database
+      const db = getDatabase();
+      const userData = {
+        email: user.email,
+        role: email === "admin@gmail.com" ? "admin" : "user",
+        createdAt: new Date().toISOString(),
+      };
+
+      await set(ref(db, `users/${user.uid}`), userData);
+
+      Alert.alert(
+        "Thành công",
+        "Đăng ký thành công! Vui lòng đăng nhập để tiếp tục.",
+        [
+          {
+            text: "OK",
+            onPress: () => navigation.navigate("Login"),
+          },
+        ]
+      );
     } catch (error) {
-      Alert.alert("Lỗi", error.message);
-      console.error(error);
+      console.error("Register error:", error);
+      let errorMessage = "Đăng ký thất bại. Vui lòng thử lại.";
+
+      switch (error.code) {
+        case "auth/email-already-in-use":
+          errorMessage = "Email đã được sử dụng";
+          break;
+        case "auth/invalid-email":
+          errorMessage = "Email không hợp lệ";
+          break;
+        case "auth/weak-password":
+          errorMessage = "Mật khẩu quá yếu";
+          break;
+        case "auth/network-request-failed":
+          errorMessage = "Lỗi kết nối mạng. Vui lòng kiểm tra lại";
+          break;
+      }
+
+      Alert.alert("Lỗi", errorMessage);
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Register</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Confirm Password"
-        value={confirmPassword}
-        onChangeText={setConfirmPassword}
-        secureTextEntry
-      />
-      <TouchableOpacity style={styles.button} onPress={handleRegister}>
-        <Text style={styles.buttonText}>Register</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.linkButton}
-        onPress={() => navigation.navigate("Login")}
-      >
-        <Text style={styles.linkText}>Already have an account? Login</Text>
-      </TouchableOpacity>
+      <View style={styles.logoContainer}>
+        <Image
+          source={require("../../assets/HaloraSpaLogo.png")}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+      </View>
+
+      <View style={styles.formContainer}>
+        <Text style={styles.title}>Đăng ký</Text>
+
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+        />
+
+        <TextInput
+          style={styles.input}
+          placeholder="Mật khẩu"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+        />
+
+        <TextInput
+          style={styles.input}
+          placeholder="Xác nhận mật khẩu"
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          secureTextEntry
+        />
+
+        <TouchableOpacity
+          style={styles.registerButton}
+          onPress={handleRegister}
+        >
+          <Text style={styles.registerButtonText}>Đăng ký</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.loginButton}
+          onPress={() => navigation.navigate("Login")}
+        >
+          <Text style={styles.loginButtonText}>
+            Đã có tài khoản? Đăng nhập ngay
+          </Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -82,44 +142,55 @@ const RegisterScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    padding: 20,
-    backgroundColor: "#fafafa",
+    backgroundColor: "#fff",
+  },
+  logoContainer: {
+    alignItems: "center",
+    marginTop: 60,
+    marginBottom: 40,
+  },
+  logo: {
+    width: 200,
+    height: 150,
+  },
+  formContainer: {
+    paddingHorizontal: 20,
   },
   title: {
-    fontSize: 48,
+    fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 40,
+    color: "#e57373",
+    marginBottom: 30,
     textAlign: "center",
-    color: "#F76C6B",
   },
   input: {
-    backgroundColor: "#fff",
-    padding: 15,
-    borderRadius: 12,
-    marginBottom: 15,
+    height: 50,
     borderWidth: 1,
-    borderColor: "#e0e0e0",
+    borderColor: "#ddd",
+    borderRadius: 8,
+    paddingHorizontal: 15,
+    marginBottom: 15,
     fontSize: 16,
   },
-  button: {
-    backgroundColor: "#F76C6B",
-    padding: 15,
-    borderRadius: 12,
+  registerButton: {
+    backgroundColor: "#e57373",
+    height: 50,
+    borderRadius: 8,
+    justifyContent: "center",
     alignItems: "center",
     marginTop: 10,
-    marginBottom: 10,
   },
-  buttonText: {
-    color: "white",
-    fontSize: 18,
+  registerButtonText: {
+    color: "#fff",
+    fontSize: 16,
     fontWeight: "bold",
   },
-  linkButton: {
+  loginButton: {
+    marginTop: 20,
     alignItems: "center",
   },
-  linkText: {
-    color: "#F76C6B",
+  loginButtonText: {
+    color: "#e57373",
     fontSize: 14,
   },
 });

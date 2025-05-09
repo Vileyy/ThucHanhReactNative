@@ -3,76 +3,145 @@ import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
   StyleSheet,
+  TouchableOpacity,
   Alert,
+  Image,
 } from "react-native";
-import { auth } from "../../firebaseConfig";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { getDatabase, ref, get, set } from "firebase/database";
+import { useNavigation } from "@react-navigation/native";
 
-const LoginScreen = ({ navigation }) => {
+const LoginScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const navigation = useNavigation();
 
   const handleLogin = async () => {
-    try {
-      if (!email || !password) {
-        Alert.alert("Lỗi", "Vui lòng nhập đầy đủ email và mật khẩu");
-        return;
-      }
+    if (!email || !password) {
+      Alert.alert("Lỗi", "Vui lòng nhập đầy đủ email và mật khẩu");
+      return;
+    }
 
+    try {
+      const auth = getAuth();
       const userCredential = await signInWithEmailAndPassword(
         auth,
         email,
         password
       );
-      Alert.alert("Thành công", "Đăng nhập thành công!");
-      console.log("User logged in successfully!", userCredential.user);
-      navigation.navigate("SpaServices");
+      const user = userCredential.user;
+
+      // Kiểm tra trong database
+      const db = getDatabase();
+      const userRef = ref(db, `users/${user.uid}`);
+      const snapshot = await get(userRef);
+
+      if (snapshot.exists()) {
+        const userData = snapshot.val();
+        // Nếu là admin
+        if (userData.role === "admin") {
+          navigation.reset({
+            index: 0,
+            routes: [{ name: "AdminHome" }],
+          });
+        } else {
+          // Nếu là user thường
+          navigation.reset({
+            index: 0,
+            routes: [{ name: "UserHome" }],
+          });
+        }
+      } else {
+        // Nếu user chưa có trong database
+        const userData = {
+          email: user.email,
+          role: "user",
+          createdAt: new Date().toISOString(),
+        };
+        await set(ref(db, `users/${user.uid}`), userData);
+
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "UserHome" }],
+        });
+      }
     } catch (error) {
-      Alert.alert("Lỗi", error.message);
-      console.error(error);
+      console.error("Login error:", error);
+      let errorMessage = "Đăng nhập thất bại. Vui lòng thử lại.";
+
+      switch (error.code) {
+        case "auth/invalid-email":
+          errorMessage = "Email không hợp lệ";
+          break;
+        case "auth/user-disabled":
+          errorMessage = "Tài khoản đã bị vô hiệu hóa";
+          break;
+        case "auth/user-not-found":
+          errorMessage = "Không tìm thấy tài khoản";
+          break;
+        case "auth/wrong-password":
+          errorMessage = "Mật khẩu không đúng";
+          break;
+        case "auth/invalid-credential":
+          errorMessage = "Email hoặc mật khẩu không đúng";
+          break;
+        case "auth/too-many-requests":
+          errorMessage =
+            "Quá nhiều lần đăng nhập thất bại. Vui lòng thử lại sau";
+          break;
+        case "auth/network-request-failed":
+          errorMessage = "Lỗi kết nối mạng. Vui lòng kiểm tra lại";
+          break;
+      }
+
+      Alert.alert("Lỗi", errorMessage);
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="phone-pad"
-        autoCapitalize="none"
-      />
-      <View style={styles.passwordContainer}>
+      <View style={styles.logoContainer}>
+        <Image
+          source={require("../../assets/HaloraSpaLogo.png")}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+      </View>
+
+      <View style={styles.formContainer}>
+        <Text style={styles.title}>Đăng nhập</Text>
+
         <TextInput
-          style={styles.passwordInput}
-          placeholder="Password"
+          style={styles.input}
+          placeholder="Email"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+        />
+
+        <TextInput
+          style={styles.input}
+          placeholder="Mật khẩu"
           value={password}
           onChangeText={setPassword}
-          secureTextEntry={!showPassword}
+          secureTextEntry
         />
+
+        <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+          <Text style={styles.loginButtonText}>Đăng nhập</Text>
+        </TouchableOpacity>
+
         <TouchableOpacity
-          style={styles.eyeIcon}
-          onPress={() => setShowPassword(!showPassword)}
+          style={styles.registerButton}
+          onPress={() => navigation.navigate("Register")}
         >
-          <Text style={{ fontSize: 18, color: "#aaa" }}>
-            {showPassword ? "🙈" : "👁"}
+          <Text style={styles.registerButtonText}>
+            Chưa có tài khoản? Đăng ký ngay
           </Text>
         </TouchableOpacity>
       </View>
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Login</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.linkButton}
-        onPress={() => navigation.navigate("Register")}
-      >
-        <Text style={styles.linkText}>Chưa có tài khoản? Đăng ký</Text>
-      </TouchableOpacity>
     </View>
   );
 };
@@ -80,63 +149,55 @@ const LoginScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    padding: 20,
-    backgroundColor: "#fafafa",
+    backgroundColor: "#fff",
+  },
+  logoContainer: {
+    alignItems: "center",
+    marginTop: 60,
+    marginBottom: 40,
+  },
+  logo: {
+    width: 200,
+    height: 150,
+  },
+  formContainer: {
+    paddingHorizontal: 20,
   },
   title: {
-    fontSize: 48,
+    fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 40,
+    color: "#e57373",
+    marginBottom: 30,
     textAlign: "center",
-    color: "#F76C6B",
   },
   input: {
-    backgroundColor: "#fff",
-    padding: 15,
-    borderRadius: 12,
+    height: 50,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    paddingHorizontal: 15,
     marginBottom: 15,
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
     fontSize: 16,
   },
-  passwordContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#f7f7fa",
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
-    marginBottom: 20,
-    paddingRight: 10,
-  },
-  passwordInput: {
-    flex: 1,
-    padding: 15,
-    fontSize: 16,
-    backgroundColor: "transparent",
-  },
-  eyeIcon: {
-    padding: 5,
-  },
-  button: {
-    backgroundColor: "#F76C6B",
-    padding: 15,
-    borderRadius: 12,
+  loginButton: {
+    backgroundColor: "#e57373",
+    height: 50,
+    borderRadius: 8,
+    justifyContent: "center",
     alignItems: "center",
     marginTop: 10,
-    marginBottom: 10,
   },
-  buttonText: {
-    color: "white",
-    fontSize: 18,
+  loginButtonText: {
+    color: "#fff",
+    fontSize: 16,
     fontWeight: "bold",
   },
-  linkButton: {
+  registerButton: {
+    marginTop: 20,
     alignItems: "center",
   },
-  linkText: {
-    color: "#007AFF",
+  registerButtonText: {
+    color: "#e57373",
     fontSize: 14,
   },
 });

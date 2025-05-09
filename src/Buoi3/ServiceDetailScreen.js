@@ -7,11 +7,17 @@ import {
   TouchableOpacity,
   Alert,
   Modal,
+  Image,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { ref, update, remove, get } from "firebase/database";
 import { db } from "../../firebaseConfig";
+import * as ImagePicker from "expo-image-picker";
+import {
+  CLOUDINARY_CLOUD_NAME,
+  CLOUDINARY_UPLOAD_PRESET,
+} from "../config/cloudinaryConfig";
 
 const ServiceDetailScreen = () => {
   const navigation = useNavigation();
@@ -23,6 +29,8 @@ const ServiceDetailScreen = () => {
 
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
+  const [formattedPrice, setFormattedPrice] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
   const [isEditing, setIsEditing] = useState(true);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [creatorInfo, setCreatorInfo] = useState({});
@@ -44,6 +52,8 @@ const ServiceDetailScreen = () => {
           const serviceData = snapshot.val();
           setName(serviceData.name || "");
           setPrice(serviceData.price ? serviceData.price.toString() : "0");
+          setFormattedPrice(serviceData.formattedPrice || "0đ");
+          setImageUrl(serviceData.imageUrl || "");
           setCreationTime(serviceData.createdAt || "");
           setUpdateTime(serviceData.updatedAt || "");
         } else {
@@ -58,6 +68,76 @@ const ServiceDetailScreen = () => {
 
     fetchServiceDetails();
   }, [serviceId]);
+
+  const formatCurrency = (value) => {
+    const numericValue = value.replace(/[^0-9]/g, "");
+    if (numericValue) {
+      return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ".") + "đ";
+    }
+    return "0đ";
+  };
+
+  const handlePriceChange = (text) => {
+    const numericValue = text.replace(/[^0-9]/g, "");
+    setPrice(numericValue);
+    setFormattedPrice(formatCurrency(numericValue));
+  };
+
+  const uploadToCloudinary = async (imageUri) => {
+    try {
+      const formData = new FormData();
+      formData.append("file", {
+        uri: imageUri,
+        type: "image/jpeg",
+        name: "upload.jpg",
+      });
+      formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+      formData.append("cloud_name", CLOUDINARY_CLOUD_NAME);
+
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+        {
+          method: "POST",
+          body: formData,
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      const data = await response.json();
+      if (data.secure_url) {
+        return data.secure_url;
+      } else {
+        throw new Error("Upload failed");
+      }
+    } catch (error) {
+      console.error("Error uploading to Cloudinary:", error);
+      throw error;
+    }
+  };
+
+  const pickImage = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
+
+      if (!result.canceled) {
+        Alert.alert("Đang tải lên", "Vui lòng đợi trong giây lát...");
+        const newImageUrl = await uploadToCloudinary(result.assets[0].uri);
+        setImageUrl(newImageUrl);
+        Alert.alert("Thành công", "Đã cập nhật hình ảnh!");
+      }
+    } catch (error) {
+      console.error("Error picking/uploading image:", error);
+      Alert.alert("Lỗi", "Không thể cập nhật ảnh. Vui lòng thử lại.");
+    }
+  };
 
   const handleUpdateService = async () => {
     if (!name || !price) {
@@ -78,6 +158,8 @@ const ServiceDetailScreen = () => {
       await update(serviceRef, {
         name: name.trim(),
         price: priceValue,
+        formattedPrice: formattedPrice,
+        imageUrl: imageUrl,
         updatedAt: currentDate,
       });
 
@@ -161,6 +243,17 @@ const ServiceDetailScreen = () => {
       </View>
 
       <View style={styles.content}>
+        <TouchableOpacity style={styles.imageContainer} onPress={pickImage}>
+          {imageUrl ? (
+            <Image source={{ uri: imageUrl }} style={styles.serviceImage} />
+          ) : (
+            <View style={styles.imagePlaceholder}>
+              <Icon name="add-a-photo" size={40} color="#666" />
+              <Text style={styles.imagePlaceholderText}>Chọn hình ảnh</Text>
+            </View>
+          )}
+        </TouchableOpacity>
+
         <View style={styles.formGroup}>
           <Text style={styles.label}>Service name *</Text>
           <TextInput
@@ -175,8 +268,8 @@ const ServiceDetailScreen = () => {
           <Text style={styles.label}>Price *</Text>
           <TextInput
             style={styles.input}
-            value={price}
-            onChangeText={setPrice}
+            value={formattedPrice}
+            onChangeText={handlePriceChange}
             placeholder="Price"
             keyboardType="numeric"
           />
@@ -319,6 +412,34 @@ const styles = StyleSheet.create({
   deleteButtonText: {
     color: "#4CAF50",
     fontWeight: "bold",
+  },
+  imageContainer: {
+    width: "100%",
+    height: 200,
+    marginBottom: 20,
+    borderRadius: 12,
+    overflow: "hidden",
+    backgroundColor: "#f5f5f5",
+  },
+  serviceImage: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
+  },
+  imagePlaceholder: {
+    width: "100%",
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "#ddd",
+    borderStyle: "dashed",
+    borderRadius: 12,
+  },
+  imagePlaceholderText: {
+    color: "#666",
+    fontSize: 16,
+    marginTop: 8,
   },
 });
 

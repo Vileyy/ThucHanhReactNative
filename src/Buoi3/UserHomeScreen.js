@@ -10,12 +10,20 @@ import {
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { useNavigation } from "@react-navigation/native";
 import { getDatabase, ref, onValue } from "firebase/database";
+import { getAuth } from "firebase/auth";
 
-const SpaServicesScreen = () => {
+const UserHomeScreen = () => {
   const navigation = useNavigation();
   const [services, setServices] = useState([]);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
+    const auth = getAuth();
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      setUser(currentUser);
+    }
+
     const db = getDatabase();
     const servicesRef = ref(db, "services");
     const unsubscribe = onValue(servicesRef, (snapshot) => {
@@ -58,11 +66,12 @@ const SpaServicesScreen = () => {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Doãn Quốc Hiếu</Text>
+        <Text style={styles.headerTitle}>Chào mừng</Text>
         <TouchableOpacity onPress={() => navigation.navigate("Profile")}>
           <Icon name="account-circle" size={32} color="#fff" />
         </TouchableOpacity>
       </View>
+
       {/* Logo */}
       <View style={styles.logoContainer}>
         <Image
@@ -71,16 +80,12 @@ const SpaServicesScreen = () => {
           resizeMode="contain"
         />
       </View>
+
       {/* Danh sách dịch vụ */}
       <View style={styles.listHeader}>
-        <Text style={styles.listTitle}>Danh sách dịch vụ</Text>
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={() => navigation.navigate("AddService")}
-        >
-          <Icon name="add-circle" size={32} color="#e57373" />
-        </TouchableOpacity>
+        <Text style={styles.listTitle}>Dịch vụ nổi bật</Text>
       </View>
+
       <FlatList
         data={services}
         keyExtractor={(item) => item.id}
@@ -133,9 +138,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#222",
   },
-  addButton: {
-    marginLeft: 8,
-  },
   serviceItem: {
     backgroundColor: "#fafafa",
     borderRadius: 10,
@@ -169,4 +171,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SpaServicesScreen;
+export default UserHomeScreen;

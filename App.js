@@ -1,6 +1,8 @@
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { Ionicons } from "@expo/vector-icons";
 import HomeScreen from "./HomeScreen";
 import Lab1 from "./src/Buoi1/Lab1";
 import Project1 from "./src/Buoi1/Project1";
@@ -19,108 +21,107 @@ import SpaServicesScreen from "./src/Buoi3/SpaServicesScreen";
 import AddServiceScreen from "./src/Buoi3/AddServiceScreen";
 import ServiceDetailScreen from "./src/Buoi3/ServiceDetailScreen";
 import ProfileScreen from "./src/Buoi3/ProfileScreen";
+import UserHomeScreen from "./src/Buoi3/UserHomeScreen";
 
 const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator();
+
+// Admin Tab Navigator
+const AdminTabNavigator = () => {
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName;
+
+          if (route.name === "SpaServices") {
+            iconName = focused ? "list" : "list-outline";
+          } else if (route.name === "AddService") {
+            iconName = focused ? "add-circle" : "add-circle-outline";
+          } else if (route.name === "Profile") {
+            iconName = focused ? "person" : "person-outline";
+          }
+
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
+        tabBarActiveTintColor: "#e57373",
+        tabBarInactiveTintColor: "gray",
+      })}
+    >
+      <Tab.Screen
+        name="SpaServices"
+        component={SpaServicesScreen}
+        options={{ headerShown: false, title: "Dịch vụ" }}
+      />
+      <Tab.Screen
+        name="AddService"
+        component={AddServiceScreen}
+        options={{ title: "Thêm dịch vụ" }}
+      />
+      <Tab.Screen
+        name="Profile"
+        component={ProfileScreen}
+        options={{ headerShown: false, title: "Cá nhân" }}
+      />
+    </Tab.Navigator>
+  );
+};
+
+// User Tab Navigator
+const UserTabNavigator = () => {
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName;
+
+          if (route.name === "UserHome") {
+            iconName = focused ? "home" : "home-outline";
+          } else if (route.name === "Profile") {
+            iconName = focused ? "person" : "person-outline";
+          }
+
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
+        tabBarActiveTintColor: "#e57373",
+        tabBarInactiveTintColor: "gray",
+      })}
+    >
+      <Tab.Screen
+        name="UserHome"
+        component={UserHomeScreen}
+        options={{ headerShown: false, title: "Trang chủ" }}
+      />
+      <Tab.Screen
+        name="Profile"
+        component={ProfileScreen}
+        options={{ headerShown: false, title: "Cá nhân" }}
+      />
+    </Tab.Navigator>
+  );
+};
 
 export default function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Home">
-        {/* Main Screens */}
-        <Stack.Screen
-          name="Home"
-          component={HomeScreen}
-          options={{ title: "Trang chủ", headerShown: false }}
-        />
-
-        {/* Bài thực hành buổi 1 */}
-        <Stack.Screen
-          name="Lab1"
-          component={Lab1}
-          options={{ title: "Bài thực hành buổi 1" }}
-        />
-        <Stack.Screen
-          name="Project1"
-          component={Project1}
-          options={{ title: "Project 1. Hello World" }}
-        />
-        <Stack.Screen
-          name="Project2"
-          component={Project2}
-          options={{ title: "Project 2. Capturing Taps" }}
-        />
-        <Stack.Screen
-          name="Project3"
-          component={Project3}
-          options={{ title: "Project 3. Custom Component" }}
-        />
-        <Stack.Screen
-          name="Project4"
-          component={Project4}
-          options={{ title: "Project 4. State" }}
-        />
-        <Stack.Screen
-          name="Project5"
-          component={Project5}
-          options={{ title: "Project 5. Text Input" }}
-        />
-        <Stack.Screen
-          name="Project6"
-          component={Project6}
-          options={{ title: "Project 6. ScrollView" }}
-        />
-        <Stack.Screen
-          name="Project7"
-          component={Project7}
-          options={{ title: "Project 7. List" }}
-        />
-        <Stack.Screen
-          name="Project8"
-          component={Project8}
-          options={{ title: "Project 8. Fetch" }}
-        />
-
-        {/* Bài thực hành buổi 2 */}
-        <Stack.Screen
-          name="Contacts"
-          component={ContactsNavigator}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="Options"
-          component={Options}
-          options={{ title: "Tùy chọn" }}
-        />
-        {/* Buoi 3 */}
-        <Stack.Screen
-          name="Login"
-          component={LoginScreen}
-          options={{ title: "Đăng nhập", headerShown: false }}
-        />
-        <Stack.Screen
-          name="Register"
-          component={RegisterScreen}
-          options={{ title: "Đăng ký", headerShown: false }}
-        />
-        <Stack.Screen
-          name="SpaServices"
-          component={SpaServicesScreen}
-          options={{ title: "Dịch vụ Spa", headerShown: false }}
-        />
-        <Stack.Screen
-          name="AddService"
-          component={AddServiceScreen}
-          options={{ title: "Thêm dịch vụ", headerShown: false }}
-        />
+      <Stack.Navigator
+        initialRouteName="Home"
+        screenOptions={{
+          headerShown: false,
+        }}
+      >
+        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="Lab1" component={Lab1} />
+        <Stack.Screen name="Lab2" component={ContactsNavigator} />
+        <Stack.Screen name="Options" component={Options} />
+        <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="Register" component={RegisterScreen} />
+        <Stack.Screen name="AdminHome" component={AdminTabNavigator} />
+        <Stack.Screen name="UserHome" component={UserTabNavigator} />
         <Stack.Screen
           name="ServiceDetail"
           component={ServiceDetailScreen}
-          options={{ title: "Chi tiết dịch vụ", headerShown: false }}
-        />
-        <Stack.Screen
-          name="Profile"
-          component={ProfileScreen}
-          options={{ headerShown: false }}
+          options={{ headerShown: false, title: "Chi tiết dịch vụ" }}
         />
       </Stack.Navigator>
     </NavigationContainer>
