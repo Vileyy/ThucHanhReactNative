@@ -69,16 +69,32 @@ const ProfileScreen = () => {
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      navigation.reset({
-        index: 0,
-        routes: [{ name: "Login" }],
-      });
-    } catch (error) {
-      Alert.alert("Error", "Failed to logout");
-    }
+  const handleLogout = () => {
+    Alert.alert(
+      "Xác nhận",
+      "Bạn có chắc chắn muốn đăng xuất?",
+      [
+        {
+          text: "Hủy",
+          style: "cancel",
+        },
+        {
+          text: "Đăng xuất",
+          onPress: async () => {
+            try {
+              await signOut(auth);
+              navigation.reset({
+                index: 0,
+                routes: [{ name: "Login" }],
+              });
+            } catch (error) {
+              Alert.alert("Lỗi", "Đăng xuất thất bại");
+            }
+          },
+        },
+      ],
+      { cancelable: false }
+    );
   };
 
   const handleChangePassword = async () => {
@@ -179,7 +195,9 @@ const ProfileScreen = () => {
 
   const updateProfileImage = async (imageUrl) => {
     try {
-      const userRef = ref(db, `users/${user.uid}`);
+      const currentUser = auth.currentUser;
+      if (!currentUser) throw new Error("User not logged in");
+      const userRef = ref(db, `users/${currentUser.uid}`);
       await update(userRef, {
         profileImage: imageUrl,
         updatedAt: new Date().toLocaleString(),
