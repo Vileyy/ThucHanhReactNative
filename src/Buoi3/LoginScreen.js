@@ -11,10 +11,12 @@ import {
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { getDatabase, ref, get, set } from "firebase/database";
 import { useNavigation } from "@react-navigation/native";
+import Icon from "react-native-vector-icons/MaterialIcons";
 
 const LoginScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const navigation = useNavigation();
 
   const handleLogin = async () => {
@@ -31,14 +33,55 @@ const LoginScreen = () => {
         password
       );
       const user = userCredential.user;
+      console.log("User logged in:", user.email);
 
       // Kiểm tra trong database
       const db = getDatabase();
       const userRef = ref(db, `users/${user.uid}`);
       const snapshot = await get(userRef);
+      console.log("User data from database:", snapshot.val());
+
+      // Kiểm tra nếu là email admin
+      if (email.toLowerCase() === "admin@gmail.com") {
+        // Nếu chưa có trong database, tạo mới với role admin
+        if (!snapshot.exists()) {
+          const userData = {
+            email: user.email,
+            role: "admin",
+            createdAt: new Date().toISOString(),
+          };
+          await set(ref(db, `users/${user.uid}`), userData);
+          console.log("Created new admin user in database");
+        } else {
+          // Nếu đã có trong database, cập nhật role thành admin
+          const userData = snapshot.val();
+          if (userData.role !== "admin") {
+            await set(ref(db, `users/${user.uid}`), {
+              ...userData,
+              role: "admin",
+            });
+            console.log("Updated user role to admin");
+          }
+        }
+
+        Alert.alert("Thành công", "Đăng nhập thành công với quyền admin!", [
+          {
+            text: "OK",
+            onPress: () => {
+              navigation.reset({
+                index: 0,
+                routes: [{ name: "AdminHome" }],
+              });
+            },
+          },
+        ]);
+        return;
+      }
 
       if (snapshot.exists()) {
         const userData = snapshot.val();
+        console.log("User role:", userData.role);
+
         // Nếu là admin
         if (userData.role === "admin") {
           Alert.alert("Thành công", "Đăng nhập thành công!", [
@@ -74,6 +117,7 @@ const LoginScreen = () => {
           createdAt: new Date().toISOString(),
         };
         await set(ref(db, `users/${user.uid}`), userData);
+        console.log("Created new regular user in database");
 
         Alert.alert("Thành công", "Đăng nhập thành công!", [
           {
@@ -142,13 +186,25 @@ const LoginScreen = () => {
           autoCapitalize="none"
         />
 
-        <TextInput
-          style={styles.input}
-          placeholder="Mật khẩu"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
+        <View style={styles.passwordContainer}>
+          <TextInput
+            style={[styles.input, styles.passwordInput]}
+            placeholder="Mật khẩu"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={!showPassword}
+          />
+          <TouchableOpacity
+            style={styles.eyeIcon}
+            onPress={() => setShowPassword(!showPassword)}
+          >
+            <Icon
+              name={showPassword ? "visibility" : "visibility-off"}
+              size={24}
+              color="#666"
+            />
+          </TouchableOpacity>
+        </View>
 
         <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
           <Text style={styles.loginButtonText}>Đăng nhập</Text>
@@ -235,6 +291,19 @@ const styles = StyleSheet.create({
   forgotPasswordText: {
     color: "#e57373",
     fontSize: 14,
+  },
+  passwordContainer: {
+    position: "relative",
+    marginBottom: 15,
+  },
+  passwordInput: {
+    paddingRight: 50, // Để chừa chỗ cho icon mắt
+  },
+  eyeIcon: {
+    position: "absolute",
+    right: 15,
+    top: 13,
+    padding: 5,
   },
 });
 

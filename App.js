@@ -22,6 +22,8 @@ import AddServiceScreen from "./src/Buoi3/AddServiceScreen";
 import ServiceDetailScreen from "./src/Buoi3/ServiceDetailScreen";
 import ProfileScreen from "./src/Buoi3/ProfileScreen";
 import ForgotPasswordScreen from "./src/Buoi3/ForgotPasswordScreen";
+import CartScreen from "./src/Buoi3/CartScreen";
+import OrderManagementScreen from "./src/Buoi3/OrderManagementScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -38,6 +40,8 @@ const AdminTabNavigator = () => {
             iconName = focused ? "list" : "list-outline";
           } else if (route.name === "AddService") {
             iconName = focused ? "add-circle" : "add-circle-outline";
+          } else if (route.name === "Orders") {
+            iconName = focused ? "receipt" : "receipt-outline";
           } else if (route.name === "Profile") {
             iconName = focused ? "person" : "person-outline";
           }
@@ -59,6 +63,11 @@ const AdminTabNavigator = () => {
         options={{ title: "Thêm dịch vụ" }}
       />
       <Tab.Screen
+        name="Orders"
+        component={OrderManagementScreen}
+        options={{ headerShown: false, title: "Đơn hàng" }}
+      />
+      <Tab.Screen
         name="Profile"
         component={ProfileScreen}
         options={{ headerShown: false, title: "Cá nhân" }}
@@ -77,6 +86,8 @@ const UserTabNavigator = () => {
 
           if (route.name === "UserHome") {
             iconName = focused ? "home" : "home-outline";
+          } else if (route.name === "Cart") {
+            iconName = focused ? "cart" : "cart-outline";
           } else if (route.name === "Profile") {
             iconName = focused ? "person" : "person-outline";
           }
@@ -91,6 +102,11 @@ const UserTabNavigator = () => {
         name="UserHome"
         component={SpaServicesScreen}
         options={{ headerShown: false, title: "Trang chủ" }}
+      />
+      <Tab.Screen
+        name="Cart"
+        component={CartScreen}
+        options={{ headerShown: false, title: "Giỏ hàng" }}
       />
       <Tab.Screen
         name="Profile"

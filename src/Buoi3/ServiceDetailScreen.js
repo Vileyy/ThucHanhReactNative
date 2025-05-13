@@ -8,21 +8,25 @@ import {
   Alert,
   Modal,
   Image,
+  Platform,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { ref, update, remove, get } from "firebase/database";
+import { ref, update, remove, get, push } from "firebase/database";
 import { db } from "../../firebaseConfig";
 import * as ImagePicker from "expo-image-picker";
 import {
   CLOUDINARY_CLOUD_NAME,
   CLOUDINARY_UPLOAD_PRESET,
 } from "../config/cloudinaryConfig";
+import { getAuth } from "firebase/auth";
 
 const ServiceDetailScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const { serviceId } = route.params;
+  const auth = getAuth();
+  const currentUser = auth.currentUser;
 
   // Add console log for debugging
   console.log("ServiceDetailScreen rendered with serviceId:", serviceId);
@@ -36,6 +40,10 @@ const ServiceDetailScreen = () => {
   const [creatorInfo, setCreatorInfo] = useState({});
   const [creationTime, setCreationTime] = useState("");
   const [updateTime, setUpdateTime] = useState("");
+  const [showAppointmentModal, setShowAppointmentModal] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedHour, setSelectedHour] = useState(9);
+  const [selectedMinute, setSelectedMinute] = useState(0);
 
   // Debug state changes
   useEffect(() => {
@@ -188,6 +196,89 @@ const ServiceDetailScreen = () => {
     return dateTimeString || "N/A";
   };
 
+  const formatDate = (date) => {
+    return date.toLocaleDateString("vi-VN", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  const formatTime = (hour, minute) => {
+    return `${hour.toString().padStart(2, "0")}:${minute
+      .toString()
+      .padStart(2, "0")}`;
+  };
+
+  const handleDateChange = (days) => {
+    const newDate = new Date(selectedDate);
+    newDate.setDate(newDate.getDate() + days);
+    if (newDate >= new Date()) {
+      setSelectedDate(newDate);
+    }
+  };
+
+  const handleHourChange = (hours) => {
+    const newHour = selectedHour + hours;
+    if (newHour >= 8 && newHour <= 20) {
+      setSelectedHour(newHour);
+    }
+  };
+
+  const handleMinuteChange = (minutes) => {
+    const newMinute = selectedMinute + minutes;
+    if (newMinute >= 0 && newMinute < 60) {
+      setSelectedMinute(newMinute);
+    }
+  };
+
+  const handleOrder = async () => {
+    if (!currentUser) {
+      Alert.alert("Lỗi", "Vui lòng đăng nhập để đặt hàng");
+      return;
+    }
+    setShowAppointmentModal(true);
+  };
+
+  const confirmOrder = async () => {
+    try {
+      const appointmentDateTime = `${formatDate(selectedDate)} lúc ${formatTime(
+        selectedHour,
+        selectedMinute
+      )}`;
+      const orderRef = ref(db, "orders");
+      const newOrder = {
+        serviceId: serviceId,
+        serviceName: name,
+        price: price,
+        formattedPrice: formattedPrice,
+        imageUrl: imageUrl,
+        userId: currentUser.uid,
+        userEmail: currentUser.email,
+        status: "pending",
+        createdAt: new Date().toLocaleString(),
+        appointmentDateTime: appointmentDateTime,
+        appointmentTimestamp: selectedDate.setHours(
+          selectedHour,
+          selectedMinute
+        ),
+      };
+
+      await push(orderRef, newOrder);
+      setShowAppointmentModal(false);
+      Alert.alert("Thành công", "Đơn hàng của bạn đã được đặt thành công!", [
+        {
+          text: "OK",
+          onPress: () => navigation.goBack(),
+        },
+      ]);
+    } catch (error) {
+      console.error("Error placing order:", error);
+      Alert.alert("Lỗi", "Không thể đặt hàng. Vui lòng thử lại.");
+    }
+  };
+
   const renderDeleteConfirmation = () => {
     return (
       <Modal visible={confirmDelete} transparent={true} animationType="fade">
@@ -219,6 +310,103 @@ const ServiceDetailScreen = () => {
     );
   };
 
+  const renderAppointmentModal = () => (
+    <Modal
+      visible={showAppointmentModal}
+      transparent={true}
+      animationType="fade"
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Chọn thời gian đặt lịch</Text>
+
+            <View style={styles.dateTimeContainer}>
+              <Text style={styles.sectionTitle}>Ngày đặt lịch</Text>
+              <View style={styles.dateSelector}>
+                <TouchableOpacity
+                  style={styles.selectorButton}
+                  onPress={() => handleDateChange(-1)}
+                >
+                  <Icon name="chevron-left" size={24} color="#e57373" />
+                </TouchableOpacity>
+                <Text style={styles.dateTimeText}>
+                  {formatDate(selectedDate)}
+                </Text>
+                <TouchableOpacity
+                  style={styles.selectorButton}
+                  onPress={() => handleDateChange(1)}
+                >
+                  <Icon name="chevron-right" size={24} color="#e57373" />
+                </TouchableOpacity>
+              </View>
+
+              <Text style={styles.sectionTitle}>Giờ đặt lịch</Text>
+              <View style={styles.timeSelector}>
+                <View style={styles.timeSection}>
+                  <Text style={styles.timeLabel}>Giờ</Text>
+                  <View style={styles.timeControls}>
+                    <TouchableOpacity
+                      style={styles.selectorButton}
+                      onPress={() => handleHourChange(-1)}
+                    >
+                      <Icon name="remove" size={24} color="#e57373" />
+                    </TouchableOpacity>
+                    <Text style={styles.dateTimeText}>
+                      {selectedHour.toString().padStart(2, "0")}
+                    </Text>
+                    <TouchableOpacity
+                      style={styles.selectorButton}
+                      onPress={() => handleHourChange(1)}
+                    >
+                      <Icon name="add" size={24} color="#e57373" />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                <View style={styles.timeSection}>
+                  <Text style={styles.timeLabel}>Phút</Text>
+                  <View style={styles.timeControls}>
+                    <TouchableOpacity
+                      style={styles.selectorButton}
+                      onPress={() => handleMinuteChange(-15)}
+                    >
+                      <Icon name="remove" size={24} color="#e57373" />
+                    </TouchableOpacity>
+                    <Text style={styles.dateTimeText}>
+                      {selectedMinute.toString().padStart(2, "0")}
+                    </Text>
+                    <TouchableOpacity
+                      style={styles.selectorButton}
+                      onPress={() => handleMinuteChange(15)}
+                    >
+                      <Icon name="add" size={24} color="#e57373" />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => setShowAppointmentModal(false)}
+              >
+                <Text style={styles.cancelButtonText}>Hủy</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.confirmButton}
+                onPress={confirmOrder}
+              >
+                <Text style={styles.confirmButtonText}>Xác nhận</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -226,20 +414,24 @@ const ServiceDetailScreen = () => {
           <Icon name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Service detail</Text>
-        <View style={{ flexDirection: "row" }}>
-          <TouchableOpacity
-            style={{ marginRight: 15 }}
-            onPress={() => {
-              console.log("Edit icon pressed");
-              setIsEditing(true);
-            }}
-          >
-            <Icon name="edit" size={24} color="#fff" />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => setConfirmDelete(true)}>
-            <Icon name="delete" size={24} color="#fff" />
-          </TouchableOpacity>
-        </View>
+        {currentUser?.email?.includes("admin") ? (
+          <View style={{ flexDirection: "row" }}>
+            <TouchableOpacity
+              style={{ marginRight: 15 }}
+              onPress={() => {
+                console.log("Edit icon pressed");
+                setIsEditing(true);
+              }}
+            >
+              <Icon name="edit" size={24} color="#fff" />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setConfirmDelete(true)}>
+              <Icon name="delete" size={24} color="#fff" />
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View style={{ width: 24 }} />
+        )}
       </View>
 
       <View style={styles.content}>
@@ -285,14 +477,23 @@ const ServiceDetailScreen = () => {
           <Text style={styles.detailText}>{formatDateTime(updateTime)}</Text>
         </View>
 
-        <TouchableOpacity
-          style={styles.updateButton}
-          onPress={handleUpdateService}
-        >
-          <Text style={styles.buttonText}>Update</Text>
-        </TouchableOpacity>
+        {currentUser?.email?.includes("admin") && (
+          <TouchableOpacity
+            style={styles.updateButton}
+            onPress={handleUpdateService}
+          >
+            <Text style={styles.buttonText}>Update</Text>
+          </TouchableOpacity>
+        )}
+
+        {!currentUser?.email?.includes("admin") && (
+          <TouchableOpacity style={styles.orderButton} onPress={handleOrder}>
+            <Text style={styles.orderButtonText}>Đặt hàng</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
+      {renderAppointmentModal()}
       {renderDeleteConfirmation()}
     </View>
   );
@@ -373,9 +574,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   modalContainer: {
-    width: "80%",
+    width: "90%",
     backgroundColor: "#fff",
-    borderRadius: 8,
+    borderRadius: 12,
     overflow: "hidden",
   },
   modalContent: {
@@ -394,16 +595,22 @@ const styles = StyleSheet.create({
   },
   modalButtons: {
     flexDirection: "row",
-    justifyContent: "flex-end",
+    justifyContent: "space-between",
+    marginTop: 20,
   },
   cancelButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 15,
+    flex: 1,
+    paddingVertical: 12,
     marginRight: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#e57373",
+    alignItems: "center",
   },
   cancelButtonText: {
-    color: "#4CAF50",
-    fontWeight: "bold",
+    color: "#e57373",
+    fontSize: 16,
+    fontWeight: "600",
   },
   deleteButton: {
     paddingVertical: 10,
@@ -440,6 +647,88 @@ const styles = StyleSheet.create({
     color: "#666",
     fontSize: 16,
     marginTop: 8,
+  },
+  orderButton: {
+    backgroundColor: "#e57373",
+    padding: 15,
+    borderRadius: 8,
+    alignItems: "center",
+    marginTop: 20,
+    marginHorizontal: 16,
+  },
+  orderButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 20,
+    textAlign: "center",
+    color: "#333",
+  },
+  dateTimeContainer: {
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#666",
+    marginBottom: 10,
+  },
+  dateSelector: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#f5f5f5",
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 20,
+  },
+  timeSelector: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    backgroundColor: "#f5f5f5",
+    borderRadius: 8,
+    padding: 10,
+  },
+  timeSection: {
+    flex: 1,
+    alignItems: "center",
+  },
+  timeLabel: {
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 5,
+  },
+  timeControls: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  selectorButton: {
+    padding: 8,
+  },
+  dateTimeText: {
+    fontSize: 16,
+    color: "#333",
+    fontWeight: "500",
+    marginHorizontal: 15,
+    minWidth: 40,
+    textAlign: "center",
+  },
+  confirmButton: {
+    flex: 1,
+    paddingVertical: 12,
+    marginLeft: 10,
+    borderRadius: 8,
+    backgroundColor: "#e57373",
+    alignItems: "center",
+  },
+  confirmButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });
 
