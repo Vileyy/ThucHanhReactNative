@@ -21,12 +21,12 @@ import SpaServicesScreen from "./src/Buoi3/SpaServicesScreen";
 import AddServiceScreen from "./src/Buoi3/AddServiceScreen";
 import ServiceDetailScreen from "./src/Buoi3/ServiceDetailScreen";
 import ProfileScreen from "./src/Buoi3/ProfileScreen";
-import UserHomeScreen from "./src/Buoi3/UserHomeScreen";
+import ForgotPasswordScreen from "./src/Buoi3/ForgotPasswordScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
-// Admin Tab Navigator
+// ===== THỰC HÀNH BUỔI 3: ADMIN TAB NAVIGATOR =====
 const AdminTabNavigator = () => {
   return (
     <Tab.Navigator
@@ -67,7 +67,7 @@ const AdminTabNavigator = () => {
   );
 };
 
-// User Tab Navigator
+// ===== THỰC HÀNH BUỔI 3: USER TAB NAVIGATOR =====
 const UserTabNavigator = () => {
   return (
     <Tab.Navigator
@@ -89,7 +89,7 @@ const UserTabNavigator = () => {
     >
       <Tab.Screen
         name="UserHome"
-        component={UserHomeScreen}
+        component={SpaServicesScreen}
         options={{ headerShown: false, title: "Trang chủ" }}
       />
       <Tab.Screen
@@ -111,13 +111,28 @@ export default function App() {
         }}
       >
         <Stack.Screen name="Home" component={HomeScreen} />
+
+        {/* ===== THỰC HÀNH BUỔI 1 ===== */}
         <Stack.Screen name="Lab1" component={Lab1} />
+        <Stack.Screen name="Project1" component={Project1} />
+        <Stack.Screen name="Project2" component={Project2} />
+        <Stack.Screen name="Project3" component={Project3} />
+        <Stack.Screen name="Project4" component={Project4} />
+        <Stack.Screen name="Project5" component={Project5} />
+        <Stack.Screen name="Project6" component={Project6} />
+        <Stack.Screen name="Project7" component={Project7} />
+        <Stack.Screen name="Project8" component={Project8} />
+
+        {/* ===== THỰC HÀNH BUỔI 2 ===== */}
         <Stack.Screen name="Lab2" component={ContactsNavigator} />
         <Stack.Screen name="Options" component={Options} />
+
+        {/* ===== THỰC HÀNH BUỔI 3 ===== */}
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Register" component={RegisterScreen} />
         <Stack.Screen name="AdminHome" component={AdminTabNavigator} />
         <Stack.Screen name="UserHome" component={UserTabNavigator} />
+        <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
         <Stack.Screen
           name="ServiceDetail"
           component={ServiceDetailScreen}

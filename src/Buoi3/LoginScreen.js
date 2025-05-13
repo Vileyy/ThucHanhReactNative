@@ -41,16 +41,30 @@ const LoginScreen = () => {
         const userData = snapshot.val();
         // Nếu là admin
         if (userData.role === "admin") {
-          navigation.reset({
-            index: 0,
-            routes: [{ name: "AdminHome" }],
-          });
+          Alert.alert("Thành công", "Đăng nhập thành công!", [
+            {
+              text: "OK",
+              onPress: () => {
+                navigation.reset({
+                  index: 0,
+                  routes: [{ name: "AdminHome" }],
+                });
+              },
+            },
+          ]);
         } else {
           // Nếu là user thường
-          navigation.reset({
-            index: 0,
-            routes: [{ name: "UserHome" }],
-          });
+          Alert.alert("Thành công", "Đăng nhập thành công!", [
+            {
+              text: "OK",
+              onPress: () => {
+                navigation.reset({
+                  index: 0,
+                  routes: [{ name: "UserHome" }],
+                });
+              },
+            },
+          ]);
         }
       } else {
         // Nếu user chưa có trong database
@@ -61,10 +75,17 @@ const LoginScreen = () => {
         };
         await set(ref(db, `users/${user.uid}`), userData);
 
-        navigation.reset({
-          index: 0,
-          routes: [{ name: "UserHome" }],
-        });
+        Alert.alert("Thành công", "Đăng nhập thành công!", [
+          {
+            text: "OK",
+            onPress: () => {
+              navigation.reset({
+                index: 0,
+                routes: [{ name: "UserHome" }],
+              });
+            },
+          },
+        ]);
       }
     } catch (error) {
       console.error("Login error:", error);
@@ -134,6 +155,13 @@ const LoginScreen = () => {
         </TouchableOpacity>
 
         <TouchableOpacity
+          style={styles.forgotPasswordButton}
+          onPress={() => navigation.navigate("ForgotPassword")}
+        >
+          <Text style={styles.forgotPasswordText}>Quên mật khẩu?</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
           style={styles.registerButton}
           onPress={() => navigation.navigate("Register")}
         >
@@ -197,6 +225,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   registerButtonText: {
+    color: "#e57373",
+    fontSize: 14,
+  },
+  forgotPasswordButton: {
+    marginTop: 10,
+    alignItems: "center",
+  },
+  forgotPasswordText: {
     color: "#e57373",
     fontSize: 14,
   },

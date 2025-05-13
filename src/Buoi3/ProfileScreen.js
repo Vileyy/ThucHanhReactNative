@@ -43,6 +43,9 @@ const ProfileScreen = () => {
     address: "",
   });
   const [profileImage, setProfileImage] = useState(null);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     fetchUserData();
@@ -214,27 +217,66 @@ const ProfileScreen = () => {
         return (
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Đổi mật khẩu</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Mật khẩu hiện tại"
-              secureTextEntry
-              value={currentPassword}
-              onChangeText={setCurrentPassword}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Mật khẩu mới"
-              secureTextEntry
-              value={newPassword}
-              onChangeText={setNewPassword}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Xác nhận mật khẩu mới"
-              secureTextEntry
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-            />
+            <View style={styles.passwordContainer}>
+              <TextInput
+                style={[styles.input, styles.passwordInput]}
+                placeholder="Mật khẩu hiện tại"
+                secureTextEntry={!showCurrentPassword}
+                value={currentPassword}
+                onChangeText={setCurrentPassword}
+              />
+              <TouchableOpacity
+                style={styles.eyeIcon}
+                onPress={() => setShowCurrentPassword(!showCurrentPassword)}
+              >
+                <Icon
+                  name={showCurrentPassword ? "visibility" : "visibility-off"}
+                  size={24}
+                  color="#666"
+                />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.passwordContainer}>
+              <TextInput
+                style={[styles.input, styles.passwordInput]}
+                placeholder="Mật khẩu mới"
+                secureTextEntry={!showNewPassword}
+                value={newPassword}
+                onChangeText={setNewPassword}
+              />
+              <TouchableOpacity
+                style={styles.eyeIcon}
+                onPress={() => setShowNewPassword(!showNewPassword)}
+              >
+                <Icon
+                  name={showNewPassword ? "visibility" : "visibility-off"}
+                  size={24}
+                  color="#666"
+                />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.passwordContainer}>
+              <TextInput
+                style={[styles.input, styles.passwordInput]}
+                placeholder="Xác nhận mật khẩu mới"
+                secureTextEntry={!showConfirmPassword}
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+              />
+              <TouchableOpacity
+                style={styles.eyeIcon}
+                onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+              >
+                <Icon
+                  name={showConfirmPassword ? "visibility" : "visibility-off"}
+                  size={24}
+                  color="#666"
+                />
+              </TouchableOpacity>
+            </View>
+
             <TouchableOpacity
               style={styles.modalButton}
               onPress={handleChangePassword}
@@ -591,6 +633,21 @@ const styles = StyleSheet.create({
     color: "#666",
     marginBottom: 20,
     fontSize: 14,
+  },
+  passwordContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 15,
+    position: "relative",
+  },
+  passwordInput: {
+    flex: 1,
+    paddingRight: 40, // Space for the eye icon
+  },
+  eyeIcon: {
+    position: "absolute",
+    right: 10,
+    padding: 5,
   },
 });
 
